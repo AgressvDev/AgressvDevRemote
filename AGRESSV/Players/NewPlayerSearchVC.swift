@@ -106,8 +106,7 @@ class NewPlayerSearchVC: UIViewController, UITableViewDataSource, UITableViewDel
         override func viewDidLoad() {
             super.viewDidLoad()
             
-         
-          
+           
             // Register the custom cell class
                 tableView.register(CircularImageCell.self, forCellReuseIdentifier: "CircularImageCell")
             
@@ -132,7 +131,8 @@ class NewPlayerSearchVC: UIViewController, UITableViewDataSource, UITableViewDel
             setupBackgroundImage()
 
             // Set up UI components
-            setupLabel()
+            setupLabels()
+            setupButtons()
             setupSearchBar()
             setupTableView()
             setupConstraints()
@@ -192,24 +192,55 @@ class NewPlayerSearchVC: UIViewController, UITableViewDataSource, UITableViewDel
             ])
         }
 
-    private func setupLabel() {
-        // Calculate scaling factors based on screen width and height
-        let screenWidth = view.bounds.size.width
-        let screenHeight = view.bounds.size.height
-        let widthScalingFactor = screenWidth / 430.0 // Use a reference width
-        let heightScalingFactor = screenHeight / 932.0 // Use a reference height
-        let scalingFactor = min(widthScalingFactor, heightScalingFactor)
+    private let createGroupButton = UIButton()
+    private let myGroups = UIButton()
+    
+    private let lbl_CreateGroup: UILabel = {
+            let label = UILabel()
+            label.text = "Create Group"
+            label.textColor = .white
+            label.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+            label.translatesAutoresizingMaskIntoConstraints = false
+            return label
+        }()
         
-        PlayerSearch_label.text = "P l a y e r s"
-        PlayerSearch_label.textAlignment = .center
-        PlayerSearch_label.translatesAutoresizingMaskIntoConstraints = false
-        PlayerSearch_label.textColor = UIColor.white
+        private let lbl_MyGroups: UILabel = {
+            let label = UILabel()
+            label.text = "My Groups"
+            label.textColor = .white
+            label.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+            label.translatesAutoresizingMaskIntoConstraints = false
+            return label
+        }()
+    
+    private func setupLabels()
+    {
         
-        // Set the font to Impact with size 25 * scalingFactor
-        PlayerSearch_label.font = UIFont(name: "Angel Wish", size: 35 * scalingFactor)
+        // Add labels to the view
+        view.addSubview(lbl_CreateGroup)
+        view.addSubview(lbl_MyGroups)
         
-        view.addSubview(PlayerSearch_label)
     }
+    
+    private func setupButtons() {
+        
+        // Set the button images
+        createGroupButton.setImage(UIImage(named: "Create_Group2"), for: .normal)
+        myGroups.setImage(UIImage(named: "myGroups2"), for: .normal)
+        
+        // Enable Auto Layout
+        createGroupButton.translatesAutoresizingMaskIntoConstraints = false
+        createGroupButton.addTarget(self, action: #selector(createGroupTapped), for: .touchUpInside)
+        
+        myGroups.translatesAutoresizingMaskIntoConstraints = false
+        myGroups.addTarget(self, action: #selector(myGroupsTapped), for: .touchUpInside)
+        
+        // Add the button to the view
+        view.addSubview(createGroupButton)
+        view.addSubview(myGroups)
+    }
+
+     
 
         private func setupSearchBar() {
             searchBar_Players.translatesAutoresizingMaskIntoConstraints = false
@@ -225,14 +256,37 @@ class NewPlayerSearchVC: UIViewController, UITableViewDataSource, UITableViewDel
         }
 
         private func setupConstraints() {
+            
+            // Calculate scaling factors based on screen width and height
+            let screenWidth = view.bounds.size.width
+            let screenHeight = view.bounds.size.height
+            let widthScalingFactor = screenWidth / 430.0 // Use a reference width
+            let heightScalingFactor = screenHeight / 932.0 // Use a reference height
+            let scalingFactor = min(widthScalingFactor, heightScalingFactor)
+            
             NSLayoutConstraint.activate([
-                // Label Constraints
-                PlayerSearch_label.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-                PlayerSearch_label.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-                PlayerSearch_label.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+                //button constraints
+                createGroupButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 1 * scalingFactor),
+                createGroupButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 90 * scalingFactor),
+                createGroupButton.widthAnchor.constraint(equalToConstant: 60 * scalingFactor),
+                createGroupButton.heightAnchor.constraint(equalToConstant: 60 * scalingFactor),
+
+                myGroups.topAnchor.constraint(equalTo: createGroupButton.topAnchor),
+                myGroups.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -90 * scalingFactor),
+                myGroups.widthAnchor.constraint(equalToConstant: 60 * scalingFactor),
+                myGroups.heightAnchor.constraint(equalToConstant: 60 * scalingFactor),
+                
+                lbl_CreateGroup.topAnchor.constraint(equalTo: createGroupButton.bottomAnchor, constant: 1 * scalingFactor),
+                lbl_CreateGroup.leadingAnchor.constraint(equalTo: createGroupButton.leadingAnchor, constant: -10 * scalingFactor),
+                lbl_MyGroups.topAnchor.constraint(equalTo: lbl_CreateGroup.topAnchor),
+                lbl_MyGroups.leadingAnchor.constraint(equalTo: myGroups.leadingAnchor, constant: -10 * scalingFactor),
+                
+                // Center the buttons vertically
+                createGroupButton.centerYAnchor.constraint(equalTo: myGroups.centerYAnchor),
+                
 
                 // Search Bar Constraints
-                searchBar_Players.topAnchor.constraint(equalTo: PlayerSearch_label.bottomAnchor, constant: 16),
+                searchBar_Players.topAnchor.constraint(equalTo: lbl_CreateGroup.bottomAnchor, constant: 20),
                 searchBar_Players.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
                 searchBar_Players.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
 
@@ -282,32 +336,7 @@ class NewPlayerSearchVC: UIViewController, UITableViewDataSource, UITableViewDel
         }
     }
 
-//    // Fetch data from "Agressv_Users" collection
-//    func fetchAgressvUsers(completion: @escaping () -> Void) {
-//        let db = Firestore.firestore()
-//
-//        db.collection("Agressv_Users").getDocuments { (querySnapshot, error) in
-//            if let error = error {
-//                print("Error fetching Agressv_Users: \(error.localizedDescription)")
-//                completion()
-//                return
-//            }
-//
-//            for document in querySnapshot!.documents {
-//                if let username = document["Username"] as? String,
-//                   let email = document["Email"] as? String,
-//                   let doublesrank = document["Doubles_Rank"] as? String
-//
-//
-//                {
-//                    self.dataSourceArrayPartner[username] = (email, doublesrank)
-//                }
-//            }
-//
-//            completion()
-//        }
-//    }
-    
+
     
    
    
@@ -371,45 +400,7 @@ class NewPlayerSearchVC: UIViewController, UITableViewDataSource, UITableViewDel
 
 
 
-//    // Merge data and reload table view
-//    func mergeDataAndReloadTable() {
-//        for (username, email) in dataSourceArrayPartner {
-//            var imageData: String?
-//
-//            // Check if there is User_Img data for the current email
-//            if let profileImageData = dataSourceProfileImages[email] {
-//                imageData = profileImageData
-//            } else {
-//                print("No User_Img data found for \(email). Using default image.")
-//
-//                // Use default image for "testuser@gmail.com"
-//                if let defaultImageData = dataSourceProfileImages["testuser@gmail.com"] {
-//                    imageData = defaultImageData
-//                }
-//            }
-//
-//            // Add tuple to mergedArray
-//            if let imageData = imageData {
-//                let tuple = (username: username, imageData: imageData)
-//                mergedArray.append(tuple)
-//            }
-//        }
-//
-//        // Sort the mergedArray by username, case-insensitive
-//        mergedArray.sort { $0.username.caseInsensitiveCompare($1.username) == .orderedAscending }
-//
-//
-//        // Set corner radius for circular image view after reload
-//           DispatchQueue.main.async {
-//               self.setCornerRadiusForVisibleCells()
-//           }
-//
-//        // Set a fixed row height for each table view cell
-//        tableView.rowHeight = 80.0  // Adjust the height to your preference
-//
-//        // Reload the table view to reflect the updated data
-//        tableView.reloadData()
-//    }
+    
  
     // Merge data and reload table view
     func mergeDataAndReloadTable() {
@@ -581,25 +572,86 @@ class NewPlayerSearchVC: UIViewController, UITableViewDataSource, UITableViewDel
         }
     }
 
-//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-//        // Ensure the array is sorted before filtering
-//        mergedArray.sort { $0.username.caseInsensitiveCompare($1.username) == .orderedAscending }
-//
-//        // Filter the merged array based on the search text (case-insensitive)
-//        filteredDataSourceArray = mergedArray.filter { (username, _) in
-//            return username.lowercased().contains(searchText.lowercased())
-//        }
-//
-//        // Update the searching flag
-//           searching = !searchText.isEmpty
-//
-//
-//        DispatchQueue.main.async {
-//            self.tableView.reloadData()
-//        }
-//    }
 
 
+    @objc private func createGroupTapped() {
+        // Create the alert controller
+        let alert = UIAlertController(title: "Create Group Name", message: nil, preferredStyle: .alert)
+        
+        // Add a text field for the group name
+        alert.addTextField { textField in
+            textField.placeholder = "Enter group name"
+        }
+        
+        // Add the "Create Group" action
+        let createAction = UIAlertAction(title: "Create Group", style: .default) { _ in
+            if let groupName = alert.textFields?.first?.text, !groupName.isEmpty {
+                
+                // Handle the creation of the group with the groupName
+                print("Group created with name: \(groupName)")
+                
+                // Create a reference to the Firestore database
+                let db = Firestore.firestore()
+                // Assume CurrentUser_Email is defined outside this function
+                let CurrentUser_Email = Auth.auth().currentUser!.email // Replace this with your actual user email variable
+                
+                // Create a new group document in the Agressv_Groups collection
+                let groupData: [String: Any] = [
+                    "Group_Name": groupName,
+                    "Group_Creator_Email": CurrentUser_Email!,
+                    "Group_Members": [CurrentUser_Email] // Initial member is the creator
+                ]
+                
+                // Add the group data to Firestore
+                db.collection("Agressv_Groups").addDocument(data: groupData) { error in
+                    if let error = error {
+                        print("Error adding document: \(error)")
+                    } else {
+                        print("Group successfully created!")
+                        
+                        // Navigate to the next view controller after successfully creating the group
+                        let yourViewController = GroupsHeaderViewController()
+                        self.navigationController?.pushViewController(yourViewController, animated: true)
+                    }
+                }
+                
+            } else {
+                // Optionally, handle the case where the text field is empty
+                print("Group name cannot be empty")
+            }
+        }
+        
+        // Add the action to the alert
+        alert.addAction(createAction)
+        
+        // Add a cancel action (optional)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alert.addAction(cancelAction)
+        
+        // Present the alert using the current view controller
+        if let topController = UIApplication.shared.connectedScenes
+            .filter({ $0 is UIWindowScene })
+            .map({ $0 as! UIWindowScene })
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow })?
+            .rootViewController {
+            topController.present(alert, animated: true, completion: nil)
+        }
+    }
+
+
+    
+    
+    
+    @objc private func myGroupsTapped() {
+        // Action to perform when the button is tapped
+        print("My Groups button tapped")
+        
+        // Navigate to the next view controller after successfully creating the group
+        let yourViewController = GroupsHeaderViewController()
+        self.navigationController?.pushViewController(yourViewController, animated: true)
+    }
+    
         func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
             // Clear the filtered data when cancel button is clicked
             filteredDataSourceArray.removeAll()
@@ -629,3 +681,4 @@ class NewPlayerSearchVC: UIViewController, UITableViewDataSource, UITableViewDel
         
        
 }
+
